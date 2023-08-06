@@ -21,17 +21,16 @@ class ProductController extends Controller
 
 
     public function sell()
-{
+    {
     $products = Product::all();
     return view('seller.sell', compact('products'));
-}
-
-    public function shop()
-{
-    $products = Product::all();
-    return view('seller.shop', compact('products'));
-}
+    }
     
+    public function shop()
+    {
+        $products = Product::all();
+        return view('seller.shop', compact('products'));
+    }
 
     public function register()
     {
@@ -42,37 +41,29 @@ class ProductController extends Controller
         return view('seller.create');
     }
 
-    public function store(Request $request)
-    {
-        $request->validate([
-            'name' => 'required|string|max:255',
-            'description' => 'required|string',
-            'price' => 'required|numeric',
-            'size' => 'nullable|array', // Optional: Allow empty sizes array
-            'color' => 'nullable|array', // Optional: Allow empty colors array
-            'image' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048',
-        ]);
+    public function store(Request $request){
 
-        // Create a new product and store the form data
-        $product = new Product();
+        $request->validate([
+            'name' => 'required',
+            'description' => 'required',
+            'price' => 'required',
+            'image' => 'required|mimes:jpeg,jpg,png,gif|max:10000'
+        ]);
+        
+        $imageName = time().'.'.$request->image->extension();
+        $request->image->move(public_path('products'), $imageName);
+
+        $product = new Product;
+        $product->image = $imageName;
         $product->name = $request->name;
         $product->description = $request->description;
         $product->price = $request->price;
-        $product->size = implode(',', $validatedData['size'] ?? []);
-        $product->color = implode(',', $validatedData['color'] ?? []);
-
-        // Handle image upload and store the file path in the database
-        if ($request->hasFile('image')) {
-            $imagePath = $request->file('image')->store('products', 'public');
-            $product->image = $imagePath;
-        }
 
         $product->save();
 
-        // Redirect the user to a success page or show a success message
-        return redirect()->route('seller.success')->with('success', 'Product added successfully!');
-    }
+        return redirect()->route('seller.sell')->withSuccess('Product created successfully');
 
+    }
 
     public function edit($id){
         
@@ -81,35 +72,32 @@ class ProductController extends Controller
         return view('seller.edit', ['product' => $product]);
     } 
 
-    public function update(Request $request, $id)
-{
-    $request->validate([
-        'name' => 'required',
-        'description' => 'required',
-        'price' => 'required',
-        'image' => 'nullable|mimes:jpeg,jpg,png,gif|max:10000',
-        'size' => 'required|in:xs,s,m,l,xl',
-    'color' => 'required|in:white,black,blue,red,orange,yellow',
-    ]);
+    public function update(Request $request, $id){
 
-    $product = Product::where('id', $id)->first();
+        $request->validate([
+            'name' => 'required',
+            'description' => 'required',
+            'price' => 'required',
+            'image' => 'nullable|mimes:jpeg,jpg,png,gif|max:10000'
+        ]);
 
-    if ($request->hasFile('image')) {
-        $imageName = time().'.'.$request->image->extension();
-        $request->image->move(public_path('products'), $imageName);
-        $product->image = $imageName;
+        $product = Product::where('id', $id)->first();
+
+        if(isset($request-> images)){
+            $imageName = time().'.'.$request->image->extension();
+            $request->image->move(public_path('products'), $imageName);
+            $product->image = $imageName;
+        }
+       
+        $product->name = $request->name;
+        $product->description = $request->description;
+        $product->price = $request->price;
+
+        $product->save();
+
+        return redirect()->route('seller.sell')->withSuccess('Product Updated successfully!');
+
     }
-
-    $product->name = $request->name;
-    $product->description = $request->description;
-    $product->price = $request->price;
-    $product->colors = json_encode($request->colors);
-    $product->sizes = json_encode($request->sizes);
-
-    $product->save();
-
-    return redirect()->route('seller.sell')->withSuccess('Product Updated successfully!');
-}
 
     public function destroy($id){
         $product = Product::where('id', $id)->first();

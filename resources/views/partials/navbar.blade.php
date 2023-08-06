@@ -31,7 +31,7 @@
                     </a>
 
                       <a href="{{ route('policies.terms&policy') }}" class="text-gray-300 hover:bg-cyan-900 hover:text-white rounded-md no-underline px-3 py-2 text-md font-medium">About</a>
-                      <a href="/contact" class="text-gray-300 hover:bg-cyan-900 hover:text-white rounded-md no-underline px-3 py-2 text-md font-medium">Contact Us</a>
+                      <a href="/" class="text-gray-300 hover:bg-cyan-900 hover:text-white rounded-md no-underline px-3 py-2 text-md font-medium">Contact Us</a>
                   </div>
               </div>
           </div>
